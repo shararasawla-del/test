@@ -1,0 +1,96 @@
+
+last seen yesterday at 1:13 am
+Wednesday
+Today
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Consent Camera & Mic Test</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width:720px; margin:40px auto; padding:0 16px; }
+    video { width:100%; max-height:60vh; background:#000; border-radius:8px; }
+    .controls { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }
+    button { padding:8px 12px; border-radius:6px; border:1px solid #ccc; background:#f7f7f7; cursor:pointer; }
+    p.notice { color:#a00; font-weight:600; }
+  </style>
+</head>
+<body>
+  <h1>Consent Camera & Mic Test</h1>
+  <p>Ei page te click kore <strong>Allow</strong> dile browser camera & microphone access dibe. Ekhane konodin onno karo device covert vabe access korben na — sudhu nijer device ba permission pawa device-e use korun.</p>
+
+  <video id="preview" autoplay playsinline></video>
+
+  <div class="controls">
+    <button id="startBtn">Start Camera & Mic</button>
+    <button id="stopBtn" disabled>Stop</button>
+    <button id="muteBtn" disabled>Toggle Microphone</button>
+  </div>
+
+  <p class="notice">Note: Modern browsers require HTTPS for camera/microphone permission. Local testing: use <code>http://localhost</code> or host via GitHub Pages (https).</p>
+
+  <script>
+    const preview = document.getElementById('preview');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const muteBtn = document.getElementById('muteBtn');
+
+    let stream = null;
+    let audioEnabled = true;
+
+    startBtn.addEventListener('click', async () => {
+      try {
+        // Request camera + microphone (consent popup will appear)
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        preview.srcObject = stream;
+
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        muteBtn.disabled = false;
+        audioEnabled = true;
+        muteBtn.textContent = 'Mute Microphone';
+      } catch (err) {
+        alert('Permission denied or no device found:\n' + err.message);
+      }
+    });
+
+    stopBtn.addEventListener('click', () => {
+      if (!stream) return;
+      // stop all tracks
+      stream.getTracks().forEach(t => t.stop());
+      preview.srcObject = null;
+      stream = null;
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      muteBtn.disabled = true;
+    });
+
+    muteBtn.addEventListener('click', () => {
+      if (!stream) return;
+      const audioTracks = stream.getAudioTracks();
+      if (audioTracks.length === 0) return;
+      audioEnabled = !audioEnabled;
+      audioTracks.forEach(t => t.enabled = audioEnabled);
+      muteBtn.textContent = audioEnabled ? 'Mute Microphone' : 'Unmute Microphone';
+    });
+
+    // Optional: show if permissions already granted (for friendly UX)
+    async function checkPermissions() {
+      if (!navigator.permissions) return;
+      try {
+        const cam = await navigator.permissions.query({ name: 'camera' });
+        const mic = await navigator.permissions.query({ name: 'microphone' });
+        // states: 'granted', 'prompt', 'denied'
+        console.log('camera perm:', cam.state, 'microphone perm:', mic.state);
+      } catch(e) {
+        // ignore if not supported
+      }
+    }
+    checkPermissions();
+  </script>
+</body>
+</html>
+3:56 pm
+
+
